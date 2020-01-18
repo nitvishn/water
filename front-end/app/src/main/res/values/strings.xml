@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">frontendapplication</string>
     <string name="title_activity_maps">Map</string>
+    <string name="date_text">Date</string>
+    <string name="tanker_text">Tanker</string>
+    <string name="route_text">Show Routes</string>
 </resources>
