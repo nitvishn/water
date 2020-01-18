@@ -172,10 +172,11 @@ def tsp(vendor, date):
 
         return len(communities), route_list
 
-    month = datetime.datetime(date.year, date.month, 1)
-    num_left, route_list = solution(vendor, month, 1)
+    period = 2
+    month = datetime.datetime(date.year, date.month, period)
+    num_left, route_list = solution(vendor, month, period)
     print("Number of communities left: ", num_left)
-    return route_list[0]
+    return route_list
 
 
 def main():
