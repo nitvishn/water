@@ -10,6 +10,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <Button
+        android:id="@+id/date_button"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
         android:drawableLeft="@drawable/date_icon"
@@ -19,7 +20,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:text="@string/tanker_text" />
+        android:text="@string/tanker_text"
+        android:onClick="selectTankers"/>
     ... />
     <Button
         android:layout_width="wrap_content"
