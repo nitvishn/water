@@ -1,8 +1,9 @@
 package com.example.frontendapplication;
 
-import androidx.fragment.app.FragmentActivity;
-
 import android.os.Bundle;
+import android.view.View;
+
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -44,5 +46,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(adarsh).title("Adarsh Palm Retreat"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(adarsh));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(16.0f));
+
+
+    }
+    public void selectDate(View view) {
+
     }
 }
