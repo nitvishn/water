@@ -27,7 +27,7 @@ def fit_sin(tt, yy):
     return {"amp": A, "omega": w, "phase": p, "offset": c, "freq": f, "period": 1./f, "fitfunc": fitfunc, "maxcov": numpy.max(pcov), "rawres": (guess,popt,pcov)}
 
 def get_res(filename):
-    data = pd.read_csv('austin_water.csv')
+    data = pd.read_csv(filename)
     x = list(set(data['Year Month']))
     x.sort()
     y = []
@@ -87,15 +87,15 @@ class Vendor(object):
     def __init__(self, id, name, numTankers, tankerCapacity, x, y, communities=None):
         self.id = id
         self.name = name
-        self.numTankers = numTankers
-        self.tankerCapacity = tankerCapacity
+        self.numTankers = int.from_bytes(numTankers, "little")
+        self.tankerCapacity = int.from_bytes(tankerCapacity, "little")
         self.communities = communities or []
         self.x = x
         self.y = y
 
         self.tankers = []
-        for i in range(numTankers):
-            self.tankers.append(Tanker(tankerCapacity))
+        for i in range(self.numTankers):
+            self.tankers.append(Tanker(self.tankerCapacity))
 
     def __str__(self):
         return '<Vendor \'' + self.name + '\' (' + str(self.numTankers)+ ' tankers): ' + str(self.x) + ',' + str(self.y) + '>'

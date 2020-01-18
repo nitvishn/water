@@ -2,6 +2,7 @@ import math
 from classes import *
 from app import db
 from app.models import Community_table, Vendor_table
+from copy import deepcopy
 
 
 def loadCommunitiesCSV(filename):
@@ -51,7 +52,7 @@ def loadVendors():
 def loadCommunities():
     communities = []
     for community in Community_table.query.all():
-        communitys.append(Community(
+        communities.append(Community(
             community.name,
             community.latitude,
             community.longitude,
@@ -134,34 +135,34 @@ def tsp(vendor, date):
                 return False
         return communities.pop(i)
 
-        def solution(vendor, month, period):
-            communities = deepcopy(vendor.communities)
-            route_list = []
+    def solution(vendor, month, period):
+        communities = deepcopy(vendor.communities)
+        route_list = []
 
-            for day in range(period):
-                tanker_routes = {}
-                for tanker in vendor.tankers:
-                    route = [vendor, ]
+        for day in range(period):
+            tanker_routes = {}
+            for tanker in vendor.tankers:
+                route = [vendor, ]
+                scores = compute_scores(
+                    route[-1], communities, tanker, month, period)
+                while(len(communities) > 0 and max(scores.values()) > 0):
+                    communities.sort(key=lambda x: scores[x])
+                    next = popNextCommunity(communities, scores)
+                    if next:
+                        route.append(next)
+                    else:
+                        break
                     scores = compute_scores(
                         route[-1], communities, tanker, month, period)
-                    while(len(communities) > 0 and max(scores.values()) > 0):
-                        communities.sort(key=lambda x: scores[x])
-                        next = popNextCommunity(communities, scores)
-                        if next:
-                            route.append(next)
-                        else:
-                            break
-                        scores = compute_scores(
-                            route[-1], communities, tanker, month, period)
-                    tanker_routes[tanker] = route
-                    route_list.append(tanker_routes)
+                tanker_routes[tanker] = route
+                route_list.append(tanker_routes)
 
-            return len(communities), route_list
+        return len(communities), route_list
 
-        month = datetime.datetime(date.year, date.month, 1)
-        num_left, route_list = solution(vendor, month, 1)
+    month = datetime.datetime(date.year, date.month, 1)
+    num_left, route_list = solution(vendor, month, 1)
 
-        return route_list[(date - month).days % period]
+    return route_list[0]
 
 
 def main():
