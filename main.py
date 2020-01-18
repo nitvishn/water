@@ -86,57 +86,58 @@ def community_score(curr_comm, next_comm, consumption, tanker, month, period):
     return score
 
 
-def tsp(vendor, month):
+def tsp(vendor, date):
+  """
+  INPUT
+  vendor is a Vendor object
+  month is a datetime object
+
+  OUTPUT
+  dictionary mapping tankers to an ordered list of communities to visit
+  """
+  def compute_scores(curr_comm, communities, tanker, month, period):
     """
     INPUT
-    vendor is a Vendor object
+    curr_comm is a Community object
+    communities is a list of Community objects
+    tanker is a Tanker object
     month is a datetime object
+    period is an int
 
     OUTPUT
-    dictionary mapping tankers to an ordered list of communities to visit
+    returns dictionary mapping each community to its score
     """
-    def compute_scores(curr_comm, communities, tanker, month, period):
-        """
-        INPUT
-        curr_comm is a Community object
-        communities is a list of Community objects
-        tanker is a Tanker object
-        month is a datetime object
-        period is an int
+    scores = {}
+    for community in communities:
+      scores[community] = community_score(curr_comm, community, community.consumption, tanker, month, period)
+    communities.sort(key=lambda x: scores[x])
+    return scores
 
-        OUTPUT
-        returns dictionary mapping each community to its score
-        """
-        scores = {}
-        for community in communities:
-            scores[community] = community_score(
-                curr_comm, community, community.consumption, tanker, month, period)
-        communities.sort(key=lambda x: scores[x])
-        return scores
+  def popNextCommunity(communities, scores):
+    """
+      INPUT
+      communities is a list of Community objects
+      scores is a dictionary mapping each community to its score
 
-    def popNextCommunity(communities, scores):
-        """
-          INPUT
-          communities is a list of Community objects
-          scores is a dictionary mapping each community to its score
-
-          OUTPUT
-          returns
-        """
-        i = 0
-        while(i < len(communities) - 1 and scores[communities[i]] < 0):
-            i += 1
-            if(scores[communities[i]] < 0):
-                return False
-        return communities.pop(i)
+      OUTPUT
+      returns
+    """
+    i = 0
+    while(i < len(communities) - 1 and scores[communities[i]] < 0):
+      i += 1
+      if(scores[communities[i]] < 0):
+        return False
+    return communities.pop(i)
 
     def solution(vendor, month, period):
         communities = deepcopy(vendor.communities)
+        route_list = []
+
+        for day in range(period):
         tanker_routes = {}
         for tanker in vendor.tankers:
             route = [vendor, ]
-            scores = compute_scores(
-                route[-1], communities, tanker, month, period)
+            scores = compute_scores(route[-1], communities, tanker, month, period)
             while(len(communities) > 0 and max(scores.values()) > 0):
                 communities.sort(key=lambda x: scores[x])
                 next = popNextCommunity(communities, scores)
@@ -144,11 +145,16 @@ def tsp(vendor, month):
                     route.append(next)
                 else:
                     break
-                scores = compute_scores(
-                    route[-1], communities, tanker, month, period)
+                scores = compute_scores(route[-1], communities, tanker, month, period)
             tanker_routes[tanker] = route
-        return len(communities), tanker_routes
-    return solution(vendor, month, 1)
+        route_list.append(tanker_routes)
+
+        return len(communities), route_list
+
+    month = datetime.datetime(date.year, date.month, 1)
+    num_left, route_list = solution(vendor, month, 1)
+
+    return route_list[(date - month).days % period]
 
 
 def main():
