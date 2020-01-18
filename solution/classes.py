@@ -39,4 +39,46 @@ def get_res(filename):
     return fit_sin(x, y)
 
 def date_valuation(date):
-    if type(date) == numpy.ndarray
+    if type(date) == numpy.ndarray:
+        valuations = []
+        for d in date:
+            valuations.append((d - datetime.datetime.strptime("200101", "%Y%m")).days)
+        return numpy.array(valuations)
+    return (date - datetime.datetime.strptime("200101", "%Y%m")).days
+
+class Community(object):
+    def __init__(self, name, x, y, type, locality, vendor_id, tanker_supply_factor = 0.1):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.type = type
+        self.locality = locality
+        self.vendor_id = vendor_id
+        self.tanker_supply_factor = tanker_supply_factor
+
+    def assign_function(self, res):
+        """
+        returns None
+        """
+        usage_per_person = 150
+        if self.type == 'Apartment':
+            persons = random.randrange(100, 200)
+        elif self.type == 'House':
+            persons = random.randrange(2, 6)
+        elif self.type == 'Restaurant':
+            persons = random.randrange(20, 30)
+
+        mean = usage_per_person * persons
+        amp = 0.2 * mean
+        self.fit_function = lambda x: amp * numpy.sin(x*res['omega'] + res['phase']) + mean
+
+    def predict(self, date):
+        return self.tanker_supply_factor * self.fit_function(date_valuation(date))
+
+    def __str__(self):
+        return '<Community \'' + self.name + '\' (' + str(self.type)+ '): ' + str(self.x) + ',' + str(self.y) + '>'
+
+class Tanker(object):
+    def __init__(self, max_capacity, cur_capacity = None):
+        self.max_capacity = max_capacity
+        self.cur_capacity = self.max_capacity or cur_capacity
