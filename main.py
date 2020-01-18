@@ -3,6 +3,7 @@ from classes import *
 from app import db
 from app.models import Community_table, Vendor_table
 
+
 def loadCommunitiesCSV(filename):
     communities_df = pd.read_csv(filename)
     communities = []
@@ -32,6 +33,7 @@ def loadVendorsCSV(filename):
             row['Longitude']))
     return vendors
 
+
 def loadVendors():
     vendors = []
     for vendor in Vendor_table.query.all():
@@ -45,6 +47,7 @@ def loadVendors():
         ))
     return vendors
 
+
 def loadCommunities():
     communities = []
     for community in Community_table.query.all():
@@ -57,6 +60,7 @@ def loadCommunities():
             community.vendor_id
         ))
     return communities
+
 
 def community_score(curr_comm, next_comm, consumption, tanker, month, period):
     # need to know the period and month before using this function
@@ -87,74 +91,77 @@ def community_score(curr_comm, next_comm, consumption, tanker, month, period):
 
 
 def tsp(vendor, date):
-  """
-  INPUT
-  vendor is a Vendor object
-  month is a datetime object
-
-  OUTPUT
-  dictionary mapping tankers to an ordered list of communities to visit
-  """
-  def compute_scores(curr_comm, communities, tanker, month, period):
     """
     INPUT
-    curr_comm is a Community object
-    communities is a list of Community objects
-    tanker is a Tanker object
+    vendor is a Vendor object
     month is a datetime object
-    period is an int
 
     OUTPUT
-    returns dictionary mapping each community to its score
+    dictionary mapping tankers to an ordered list of communities to visit
     """
-    scores = {}
-    for community in communities:
-      scores[community] = community_score(curr_comm, community, community.consumption, tanker, month, period)
-    communities.sort(key=lambda x: scores[x])
-    return scores
+    def compute_scores(curr_comm, communities, tanker, month, period):
+        """
+        INPUT
+        curr_comm is a Community object
+        communities is a list of Community objects
+        tanker is a Tanker object
+        month is a datetime object
+        period is an int
 
-  def popNextCommunity(communities, scores):
-    """
-      INPUT
-      communities is a list of Community objects
-      scores is a dictionary mapping each community to its score
+        OUTPUT
+        returns dictionary mapping each community to its score
+        """
+        scores = {}
+        for community in communities:
+            scores[community] = community_score(
+                curr_comm, community, community.consumption, tanker, month, period)
+        communities.sort(key=lambda x: scores[x])
+        return scores
 
-      OUTPUT
-      returns
-    """
-    i = 0
-    while(i < len(communities) - 1 and scores[communities[i]] < 0):
-      i += 1
-      if(scores[communities[i]] < 0):
-        return False
-    return communities.pop(i)
+    def popNextCommunity(communities, scores):
+        """
+          INPUT
+          communities is a list of Community objects
+          scores is a dictionary mapping each community to its score
 
-    def solution(vendor, month, period):
-        communities = deepcopy(vendor.communities)
-        route_list = []
+          OUTPUT
+          returns
+        """
+        i = 0
+        while(i < len(communities) - 1 and scores[communities[i]] < 0):
+            i += 1
+            if(scores[communities[i]] < 0):
+                return False
+        return communities.pop(i)
 
-        for day in range(period):
-        tanker_routes = {}
-        for tanker in vendor.tankers:
-            route = [vendor, ]
-            scores = compute_scores(route[-1], communities, tanker, month, period)
-            while(len(communities) > 0 and max(scores.values()) > 0):
-                communities.sort(key=lambda x: scores[x])
-                next = popNextCommunity(communities, scores)
-                if next:
-                    route.append(next)
-                else:
-                    break
-                scores = compute_scores(route[-1], communities, tanker, month, period)
-            tanker_routes[tanker] = route
-        route_list.append(tanker_routes)
+        def solution(vendor, month, period):
+            communities = deepcopy(vendor.communities)
+            route_list = []
 
-        return len(communities), route_list
+            for day in range(period):
+                tanker_routes = {}
+                for tanker in vendor.tankers:
+                    route = [vendor, ]
+                    scores = compute_scores(
+                        route[-1], communities, tanker, month, period)
+                    while(len(communities) > 0 and max(scores.values()) > 0):
+                        communities.sort(key=lambda x: scores[x])
+                        next = popNextCommunity(communities, scores)
+                        if next:
+                            route.append(next)
+                        else:
+                            break
+                        scores = compute_scores(
+                            route[-1], communities, tanker, month, period)
+                    tanker_routes[tanker] = route
+                    route_list.append(tanker_routes)
 
-    month = datetime.datetime(date.year, date.month, 1)
-    num_left, route_list = solution(vendor, month, 1)
+            return len(communities), route_list
 
-    return route_list[(date - month).days % period]
+        month = datetime.datetime(date.year, date.month, 1)
+        num_left, route_list = solution(vendor, month, 1)
+
+        return route_list[(date - month).days % period]
 
 
 def main():
