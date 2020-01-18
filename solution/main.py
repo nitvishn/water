@@ -26,7 +26,7 @@ def community_score(curr_comm, next_comm, consumption, tanker, month, period):
   score = ((tanker.cur_capacity - (next_comm.predict(month) * period) * 0.2) + (distance * 0.8))
   return score
 
-def tsp(vendor, month):
+def tsp(vendor, date):
   """
   INPUT 
   vendor is a Vendor object 
@@ -69,23 +69,32 @@ def tsp(vendor, month):
         return False
     return communities.pop(i)
 
-  def solution(vendor, month, period):
-      communities = deepcopy(vendor.communities)
-      tanker_routes = {}
-      for tanker in vendor.tankers:
-          route = [vendor, ]
-          scores = compute_scores(route[-1], communities, tanker, month, period)
-          while(len(communities) > 0 and max(scores.values()) > 0):
-              communities.sort(key=lambda x: scores[x])
-              next = popNextCommunity(communities, scores)
-              if next:
-                  route.append(next)
-              else:
-                  break
-              scores = compute_scores(route[-1], communities, tanker, month, period)
-          tanker_routes[tanker] = route
-      return len(communities), tanker_routes
-  return solution(vendor, month, 1)
+    def solution(vendor, month, period):
+        communities = deepcopy(vendor.communities)
+        route_list = []
+
+        for day in range(period):
+        tanker_routes = {}
+        for tanker in vendor.tankers:
+            route = [vendor, ]
+            scores = compute_scores(route[-1], communities, tanker, month, period)
+            while(len(communities) > 0 and max(scores.values()) > 0):
+                communities.sort(key=lambda x: scores[x])
+                next = popNextCommunity(communities, scores)
+                if next:
+                    route.append(next)
+                else:
+                    break
+                scores = compute_scores(route[-1], communities, tanker, month, period)
+            tanker_routes[tanker] = route
+        route_list.append(tanker_routes)
+
+        return len(communities), route_list
+
+    month = datetime.datetime(date.year, date.month, 1)
+    num_left, route_list = solution(vendor, month, 1)
+
+    return route_list[(date - month).days % period]
 
 def main():
     random.seed(0)
