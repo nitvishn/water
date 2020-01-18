@@ -82,3 +82,20 @@ class Tanker(object):
     def __init__(self, max_capacity, cur_capacity = None):
         self.max_capacity = max_capacity
         self.cur_capacity = self.max_capacity or cur_capacity
+
+class Vendor(object):
+    def __init__(self, id, name, numTankers, tankerCapacity, x, y, communities=None):
+        self.id = id
+        self.name = name
+        self.numTankers = numTankers
+        self.tankerCapacity = tankerCapacity
+        self.communities = communities or []
+        self.x = x
+        self.y = y
+
+    self.tankers = []
+    for i in range(numTankers):
+        self.tankers.append(Tanker(tankerCapacity))
+
+    def __str__(self):
+        return '<Vendor \'' + self.name + '\' (' + str(self.numTankers)+ ' tankers): ' + str(self.x) + ',' + str(self.y) + '>'
