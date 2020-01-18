@@ -77,7 +77,6 @@ class Community(object):
 
     def serialisable_dict(self, month):
         d = deepcopy(self.__dict__)
-        d['consumption'] = self.predict(month)
         del d['fit_function']
         return d
 

@@ -119,7 +119,7 @@ def tsp(vendor, date):
         communities.sort(key=lambda x: scores[x])
         return scores
 
-    def popNextCommunity(communities, scores):
+    def getNextCommunity(communities, scores):
         """
           INPUT
           communities is a list of Community objects
@@ -133,10 +133,12 @@ def tsp(vendor, date):
             i += 1
             if(scores[communities[i]] < 0):
                 return False
-        return communities.pop(i)
+        return communities[i]
 
     def solution(vendor, month, period):
         communities = deepcopy(vendor.communities)
+        for community in communities:
+            community.consumption = community.predict(month)
         route_list = []
 
         for day in range(period):
@@ -148,9 +150,14 @@ def tsp(vendor, date):
                     route[-1], communities, tanker, month, period)
                 while(len(communities) > 0 and max(scores.values()) > 0):
                     communities.sort(key=lambda x: scores[x])
-                    next = popNextCommunity(communities, scores)
+                    next = getNextCommunity(communities, scores)
                     if next:
-                        tanker.cur_capacity -= next.predict(month)
+                        if tanker.cur_capacity >= next.consumption:
+                            tanker.cur_capacity -= next.consumption
+                            communities.remove(next)
+                        else:
+                            next.consumption -= tanker.cur_capacity
+                            tanker.cur_capacity = 0
                         route.append(next.serialisable_dict(month))
                     else:
                         break
