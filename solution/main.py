@@ -87,6 +87,53 @@ def tsp(vendor, month):
       return len(communities), tanker_routes
   return solution(vendor, month, 1)
 
+def main():
+    random.seed(0)
+    today=datetime.datetime(2002, 1, 1)
+    datem=datetime.datetime(today.year, today.month, 1)
+
+    # dates = []
+    # for i in range(12 * 10):
+    #     today += relativedelta(months=1)
+    #     dates.append(today)
+    # dates = numpy.array(dates)
+
+    vendors=loadVendors('vendors.csv')
+    communities=loadCommunities('communities.csv')
+    res=get_res('austin_water.csv')
+    for community in communities:
+        community.assign_function(res)
+        for vendor in vendors:
+            if community.vendor_id == vendor.id:
+                vendor.communities.append(community)
+
+    # c1 = communities[0]
+    # c2 = communities[1]
+    # tanker = Tanker(5000)
+    #
+    # today = datetime.datetime.today()
+    # month = datetime.datetime(today.year, today.month, 1)
+    # print(community_score(c1, communities[2], month, tanker))
+
+    # y = vendors[0].communities[0].predict(dates)
+    # plt.plot(dates, y)
+    # plt.show()
+
+    solutions={}
+    for vendor in vendors:
+        solutions[vendor]=tsp(vendor, datem)
+    return solutions
+
+if __name__ == "__main__":
+    sol = main()
+    for vendor in sol:
+        print(vendor)
+        indent = 1
+        comm_left, tanker_routes = sol[vendor]
+        for tanker in tanker_routes:
+            print('\t' + str(tanker))
+            for community in tanker_routes[tanker]:
+                print(2*'\t' + str(community))
 
 
 
