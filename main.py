@@ -41,8 +41,8 @@ def loadVendors():
         vendors.append(Vendor(
             vendor.id,
             vendor.name,
-            vendor.num_tankers,
-            vendor.tanker_capacity,
+            int.from_bytes(vendor.num_tankers, "little"),
+            int.from_bytes(vendor.tanker_capacity, "little"),
             vendor.latitude,
             vendor.longitude
         ))
@@ -58,7 +58,7 @@ def loadCommunities():
             community.longitude,
             community.type,
             community.locality,
-            community.vendor_id
+            int.from_bytes(community.vendor_id, "little")
         ))
     return communities
 
@@ -77,8 +77,8 @@ def community_score(curr_comm, next_comm, consumption, tanker, month, period):
     """
     earth_radius = 6371
     # Converting the latitude and longitude degrees to radians
-    curr_lat_rad = curr_comm.x * math.pi / 180
-    curr_long_rad = curr_comm.y * math.pi / 180
+    curr_lat_rad = curr_comm['x'] * math.pi / 180
+    curr_long_rad = curr_comm['y'] * math.pi / 180
     next_lat_rad = next_comm.x * math.pi / 180
     next_long_rad = next_comm.y * math.pi / 180
     # Equirectangular approximation
@@ -115,7 +115,7 @@ def tsp(vendor, date):
         scores = {}
         for community in communities:
             scores[community] = community_score(
-                curr_comm, community, community.consumption, tanker, month, period)
+                curr_comm, community, community.predict(month), tanker, month, period)
         communities.sort(key=lambda x: scores[x])
         return scores
 
@@ -141,27 +141,31 @@ def tsp(vendor, date):
 
         for day in range(period):
             tanker_routes = {}
+            tanker_counter = 1
             for tanker in vendor.tankers:
-                route = [vendor, ]
+                route = [vendor.serialisable_dict(), ]
                 scores = compute_scores(
                     route[-1], communities, tanker, month, period)
                 while(len(communities) > 0 and max(scores.values()) > 0):
                     communities.sort(key=lambda x: scores[x])
                     next = popNextCommunity(communities, scores)
                     if next:
-                        route.append(next)
+                        tanker.cur_capacity -= next.predict(month)
+                        route.append(next.serialisable_dict(month))
                     else:
                         break
                     scores = compute_scores(
                         route[-1], communities, tanker, month, period)
-                tanker_routes[tanker] = route
-                route_list.append(tanker_routes)
+                tanker_routes[tanker_counter] = route
+                tanker_counter += 1
+            route_list.append(tanker_routes)
 
         return len(communities), route_list
 
     month = datetime.datetime(date.year, date.month, 1)
     num_left, route_list = solution(vendor, month, 1)
 
+    route_list[0]['num_left'] = num_left
     return route_list[0]
 
 

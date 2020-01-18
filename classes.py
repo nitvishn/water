@@ -5,6 +5,9 @@ import math
 import numpy, scipy.optimize
 import pylab as plt
 import random
+from copy import deepcopy
+
+random.seed(0)
 
 def fit_sin(tt, yy):
     """
@@ -72,6 +75,12 @@ class Community(object):
         amp = 0.2 * mean
         self.fit_function = lambda x: amp * numpy.sin(x*res['omega'] + res['phase']) + mean
 
+    def serialisable_dict(self, month):
+        d = deepcopy(self.__dict__)
+        d['consumption'] = self.predict(month)
+        del d['fit_function']
+        return d
+
     def predict(self, date):
         return self.tanker_supply_factor * self.fit_function(date_valuation(date))
 
@@ -87,8 +96,8 @@ class Vendor(object):
     def __init__(self, id, name, numTankers, tankerCapacity, x, y, communities=None):
         self.id = id
         self.name = name
-        self.numTankers = int.from_bytes(numTankers, "little")
-        self.tankerCapacity = int.from_bytes(tankerCapacity, "little")
+        self.numTankers = numTankers
+        self.tankerCapacity = tankerCapacity
         self.communities = communities or []
         self.x = x
         self.y = y
@@ -96,6 +105,12 @@ class Vendor(object):
         self.tankers = []
         for i in range(self.numTankers):
             self.tankers.append(Tanker(self.tankerCapacity))
+
+    def serialisable_dict(self):
+        d = deepcopy(self.__dict__)
+        del d['tankers']
+        del d['communities']
+        return d
 
     def __str__(self):
         return '<Vendor \'' + self.name + '\' (' + str(self.numTankers)+ ' tankers): ' + str(self.x) + ',' + str(self.y) + '>'

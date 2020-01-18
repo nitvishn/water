@@ -26,6 +26,18 @@ def write_to_database():
 
     return "Wrote " + str(len(vendors)) + " vendors and " + str(len(communities)) + " communities."
 
+@app.route('/delete')
+def delete_all_entries():
+    c_count = 0
+    for c in Community_table.query.all():
+        db.session.delete(c)
+        c_count += 1
+    v_count = 0
+    for v in Vendor_table.query.all():
+        db.session.delete(v)
+        v_count += 1
+    db.session.commit()
+    return "Deleted " + str(v_count) + " vendors and " + str(c_count) + " communities."
 
 @app.route('/api')
 def compute_route():
