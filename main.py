@@ -118,7 +118,7 @@ def tsp(vendor, date):
         scores = {}
         for community in communities:
             scores[community] = community_score(
-                curr_comm, community, community.predict(month), tanker, month, period)
+                curr_comm, community, community.consumption, tanker, month, period)
         communities.sort(key=lambda x: scores[x])
         return scores
 
@@ -142,6 +142,7 @@ def tsp(vendor, date):
         communities = deepcopy(vendor.communities)
         for community in communities:
             community.consumption = community.predict(month)
+            print(community.consumption, community.tanker_supply_factor)
         route_list = []
 
         for day in range(period):
@@ -173,17 +174,14 @@ def tsp(vendor, date):
 
     month = datetime.datetime(date.year, date.month, 1)
     num_left, route_list = solution(vendor, month, 1)
-
-    # not_satisfied_serialised = []
-
-    # route_list[0]['num_left'] = num_left
+    print("Number of communities left: ", num_left)
     return route_list[0]
 
 
 def main():
     random.seed(0)
-    today = datetime.datetime(2002, 1, 1)
-    datem = datetime.datetime(today.year, today.month, 1)
+    today=datetime.datetime(2002, 1, 1)
+    datem=datetime.datetime(today.year, today.month, 1)
 
     # dates = []
     # for i in range(12 * 10):
@@ -191,9 +189,9 @@ def main():
     #     dates.append(today)
     # dates = numpy.array(dates)
 
-    vendors = loadVendors('vendors.csv')
-    communities = loadCommunities('communities.csv')
-    res = get_res('austin_water.csv')
+    vendors=loadVendorsCSV('csvdata/vendors.csv')
+    communities=loadCommunitiesCSV('csvdata/communities.csv')
+    res=get_res('csvdata/austin_water.csv')
     for community in communities:
         community.assign_function(res)
         for vendor in vendors:
@@ -212,19 +210,21 @@ def main():
     # plt.plot(dates, y)
     # plt.show()
 
-    solutions = {}
-    for vendor in vendors:
-        solutions[vendor] = tsp(vendor, datem)
-    return solutions
+    # solutions={}
+    # for vendor in vendors:
+    #     solutions[vendor]=tsp(vendor, datem)
+    #     print(solutions[vendor])
+    # return solutions
+
+    vendor = vendors[0]
+    print(vendor.communities)
+    tanker_num = 0
+    for tanker_route in tsp(vendor, datem):
+        print(tanker_num)
+        for community in tanker_route:
+            print(1*'\t', community)
+        tanker_num += 1
 
 
 if __name__ == "__main__":
-    sol = main()
-    for vendor in sol:
-        print(vendor)
-        indent = 1
-        comm_left, tanker_routes = sol[vendor]
-        for tanker in tanker_routes:
-            print('\t' + str(tanker))
-            for community in tanker_routes[tanker]:
-                print(2 * '\t' + str(community))
+    main()
