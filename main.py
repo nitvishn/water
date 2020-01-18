@@ -63,6 +63,7 @@ def loadCommunities():
             community.vendor_id,
             # int.from_bytes(community.vendor_id, "little")
         ))
+        communities[-1].num_persons = community.num_persons
     return communities
 
 
