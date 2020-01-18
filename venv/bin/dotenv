@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/nitvishn/OneDrive - The International School Bangalore (TISB)/Projects/water/back-end/venv/bin/python3" "$0" "$@"
+'''exec' "/Users/nitvishn/OneDrive - The International School Bangalore (TISB)/Projects/water/venv/bin/python3" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re

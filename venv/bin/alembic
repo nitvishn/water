@@ -1,4 +1,4 @@
-#!"/Users/nitvishn/OneDrive - The International School Bangalore (TISB)/Projects/water/back-end/venv/bin/python3"
+#!"/Users/nitvishn/OneDrive - The International School Bangalore (TISB)/Projects/water/venv/bin/python3"
 # EASY-INSTALL-ENTRY-SCRIPT: 'alembic==1.3.2','console_scripts','alembic'
 __requires__ = 'alembic==1.3.2'
 import re
