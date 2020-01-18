@@ -46,15 +46,17 @@ def compute_route():
     vendors = loadVendors()
     communities = loadCommunities()
     res = get_res('csvdata/austin_water.csv')
+
     for community in communities:
         community.assign_function(res)
         for vendor in vendors:
             if community.vendor_id == vendor.id:
                 vendor.communities.append(community)
 
-    for vendor in vendors:
-        print(vendor.id)
-        if vendor.id == vendor_id:
-            print(tsp(vendor, date))
-            return json.dumps(tsp(vendor, date))
-    return json.dumps({'vendor_id': vendor_id, 'date': str(date)})
+    vendor = vendors[0]
+    return json.dumps(tsp(vendor, date))
+    # for vendor in vendors:
+    #     if vendor.id == vendor_id:
+    #         print(tsp(vendor, date))
+    #         return json.dumps(tsp(vendor, date))
+    # return json.dumps({'vendor_id': vendor_id, 'date': str(date)})

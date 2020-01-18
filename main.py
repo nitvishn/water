@@ -142,7 +142,6 @@ def tsp(vendor, date):
         communities = deepcopy(vendor.communities)
         for community in communities:
             community.consumption = community.predict(month)
-            print(community.consumption, community.tanker_supply_factor)
         route_list = []
 
         for day in range(period):
@@ -154,6 +153,7 @@ def tsp(vendor, date):
                 while(len(communities) > 0 and max(scores.values()) > 0):
                     communities.sort(key=lambda x: scores[x])
                     next = getNextCommunity(communities, scores)
+                    print(next)
                     if next:
                         if tanker.cur_capacity >= next.consumption:
                             tanker.cur_capacity -= next.consumption
@@ -172,10 +172,12 @@ def tsp(vendor, date):
 
         return len(communities), route_list
 
-    month = datetime.datetime(date.year, date.month, 1)
-    num_left, route_list = solution(vendor, month, 1)
-    print("Number of communities left: ", num_left)
-    return route_list[0]
+    period=1
+    month = datetime.datetime(date.year, date.month, period)
+    num_left, route_list = solution(vendor, month, period)
+    return_dict = {}
+    return_dict['data'] = route_list[0]
+    return return_dict
 
 
 def main():
