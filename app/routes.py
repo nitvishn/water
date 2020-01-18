@@ -15,13 +15,13 @@ def index():
 def write_to_database():
     vendors = loadVendorsCSV('csvdata/vendors.csv')
     for vendor in vendors:
-        db.session.add(Vendor_table(name=vendor.name, num_tankers=vendor.numTankers,
-                                    tanker_capacity=vendor.tankerCapacity, latitude=vendor.x, longitude=vendor.y))
+        db.session.add(Vendor_table(name=vendor.name, num_tankers=float(vendor.numTankers),
+                                    tanker_capacity=float(vendor.tankerCapacity), latitude=float(vendor.x), longitude=float(vendor.y)))
 
     communities = loadCommunitiesCSV('csvdata/communities.csv')
     for community in communities:
         db.session.add(Community_table(name=community.name, locality=community.locality, type=community.type,
-                                       latitude=community.x, longitude=community.y, vendor_id=community.vendor_id))
+                                       latitude=float(community.x), longitude=float(community.y), vendor_id=int(community.vendor_id)))
     db.session.commit()
 
     return "Wrote " + str(len(vendors)) + " vendors and " + str(len(communities)) + " communities."
@@ -53,7 +53,8 @@ def compute_route():
                 vendor.communities.append(community)
 
     for vendor in vendors:
+        print(vendor.id)
         if vendor.id == vendor_id:
             print(tsp(vendor, date))
             return json.dumps(tsp(vendor, date))
-    return json.dumps({'vendor_id': vendor_id, 'date': date})
+    return json.dumps({'vendor_id': vendor_id, 'date': str(date)})

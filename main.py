@@ -41,8 +41,10 @@ def loadVendors():
         vendors.append(Vendor(
             vendor.id,
             vendor.name,
-            int.from_bytes(vendor.num_tankers, "little"),
-            int.from_bytes(vendor.tanker_capacity, "little"),
+            vendor.num_tankers,
+            vendor.tanker_capacity,
+            # int.from_bytes(vendor.num_tankers, "little"),
+            # int.from_bytes(vendor.tanker_capacity, "little"),
             vendor.latitude,
             vendor.longitude
         ))
@@ -58,7 +60,8 @@ def loadCommunities():
             community.longitude,
             community.type,
             community.locality,
-            int.from_bytes(community.vendor_id, "little")
+            community.vendor_id,
+            # int.from_bytes(community.vendor_id, "little")
         ))
     return communities
 
@@ -140,8 +143,7 @@ def tsp(vendor, date):
         route_list = []
 
         for day in range(period):
-            tanker_routes = {}
-            tanker_counter = 1
+            tanker_routes = []
             for tanker in vendor.tankers:
                 route = [vendor.serialisable_dict(), ]
                 scores = compute_scores(
@@ -156,8 +158,8 @@ def tsp(vendor, date):
                         break
                     scores = compute_scores(
                         route[-1], communities, tanker, month, period)
-                tanker_routes[tanker_counter] = route
-                tanker_counter += 1
+                tanker_routes.append(route)
+            tanker_routes.sort(key=lambda x: len(x), reverse=True)
             route_list.append(tanker_routes)
 
         return len(communities), route_list
@@ -165,7 +167,9 @@ def tsp(vendor, date):
     month = datetime.datetime(date.year, date.month, 1)
     num_left, route_list = solution(vendor, month, 1)
 
-    route_list[0]['num_left'] = num_left
+    # not_satisfied_serialised = []
+
+    # route_list[0]['num_left'] = num_left
     return route_list[0]
 
 
