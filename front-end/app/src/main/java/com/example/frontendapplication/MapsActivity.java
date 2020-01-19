@@ -25,6 +25,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -49,6 +50,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.maps.android.PolyUtil;
 
@@ -95,11 +97,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Add a marker in Sydney and move the camera
 
 //        mMap.addMarker(new MarkerOptions().position(adarsh).title("Adarsh Palm Retreat"));
-
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(12.927884, 77.621447)));
 
 
 
     }
+
+
 
     public void selectDate(View view) {
         final Button dateButton = (Button) findViewById(R.id.date_button);
@@ -166,7 +170,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(DialogInterface dialog, int which) {
                 // user clicked OK
                 mMap.clear();
-
+                polyline_strings = new LinkedList<>();
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -202,17 +206,82 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mQueue.add(request);
     }
     public void showRoutes(View view) {
-        place1 = new MarkerOptions().position(new LatLng(27.658143, 85.3199503)).title("Location 1");
-        place2 = new MarkerOptions().position(new LatLng(27.667491, 85.3208583)).title("Location 2");
-        mMap.addMarker(place1);
-        mMap.addMarker(place2);
+//        place1 = new MarkerOptions().position(new LatLng(27.658143, 85.3199503)).title("Location 1");
+//        place2 = new MarkerOptions().position(new LatLng(27.667491, 85.3208583)).title("Location 2");
+//        mMap.addMarker(place1);
+//        mMap.addMarker(place2);
 
-        double lat1 = 27.658143;
-        double long1 = 85.3199503;
+//        double lat1 = 27.658143;
+//        double long1 = 85.3199503;
+//
+//        double lat2 = 27.667491;
+//        double long2 = 85.3208583;
 
-        double lat2 = 27.667491;
-        double long2 = 85.3208583;
+        double lastLat = 0;
+        double lastLong = 0;
+        if(!hasData){
+            return;
+        }
 
+        for(int tanker_index = 1; tanker_index <= numTankers; tanker_index++){
+            if(!checkedItems[tanker_index]) {
+                continue;
+            }
+            try{
+                JSONArray tanker = server_response.getJSONArray("data").getJSONArray(tanker_index-1);
+                for(int location_index = 0; location_index < tanker.length(); location_index++){
+                    try{
+                        JSONObject location = tanker.getJSONObject(location_index);
+                        //draw the point
+
+                        String name = location.getString("name");
+                        double lat1 = location.getDouble("x");
+                        double long1 = location.getDouble("y");
+                        LatLng point = new LatLng(lat1, long1);
+                        Marker m = mMap.addMarker(new MarkerOptions().position(point).title(location.getString("name")));
+                        if(location_index != 0){
+
+                            double consumption = location.getDouble("consumption");
+                            String type = location.getString("type");
+                            String locality = location.getString("locality");
+                            int vendor_id = location.getInt("vendor_id");
+                            double tanker_supply_factor = location.getDouble("tanker_supply_factor");
+                            registerRouteForPoints(lat1, lastLat, long1, lastLong);
+                            InfoWindowData info = new InfoWindowData();
+                            info.setName("Destination: " + Integer.toString(location_index));
+                            info.setType(type);
+                            info.setConsumption(Double.toString(consumption));
+                            CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(this);
+                            mMap.setInfoWindowAdapter(customInfoWindow);
+                            m.setTag(info);
+                            m.showInfoWindow();
+                        }
+                        else {
+                            InfoWindowData info = new InfoWindowData();
+                            info.setName("Origin");
+                            info.setType("Vendor");
+                            info.setConsumption("Capacity: 5000 litres");
+                            CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(this);
+                            mMap.setInfoWindowAdapter(customInfoWindow);
+                            m.setTag(info);
+                            m.showInfoWindow();
+                        }
+                        lastLat = lat1;
+                        lastLong = long1;
+                    }catch(JSONException e){
+                        e.printStackTrace();
+                        continue;
+                    }
+                }
+            }catch(JSONException e){
+                e.printStackTrace();
+                continue;
+            }
+        }
+        drawPolyLines();
+    }
+
+    public void registerRouteForPoints(double lat1, double lat2, double long1, double long2){
         String routeURL = "https://graphhopper.com/api/1/route?point=" + lat1 + "," + long1 + "&point=" + lat2 + "," + long2 + "&vehicle=car&key=9ff204aa-4358-4f48-863a-7085164d1eae";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, routeURL, null,
                 new Response.Listener<JSONObject>() {
@@ -224,14 +293,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             e.printStackTrace();
                         }
                     }
-        }, new Response.ErrorListener() {
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
             }
         });
-        mQueue.add(request);
 
+        mQueue.add(request);
+    }
+
+    public void drawPolyLines(){
         for(String polyline: polyline_strings) {
             List<LatLng> line_points = PolyUtil.decode(polyline);
             for (int i = 0; i < line_points.size() - 1; i++) {
@@ -243,49 +315,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         new PolylineOptions().add(
                                 new LatLng(src.latitude, src.longitude),
                                 new LatLng(dest.latitude,dest.longitude)
-                        ).width(2).color(Color.BLUE).geodesic(true)
+                        ).width(10).color(Color.BLUE).geodesic(true)
                 );
             }
         }
-
-//
-//        new com.example.frontendapplication.FetchURL(MapsActivity.this).execute(getUrl(place1.getPosition(), place2.getPosition(), "driving"), "driving");
-//        if(!hasData){
-//            return;
-//        }
-//        for(int tanker_index = 1; tanker_index <= numTankers; tanker_index++){
-//            if(!checkedItems[tanker_index]) {
-//                continue;
-//            }
-//            try{
-//                JSONArray tanker = server_response.getJSONArray("data").getJSONArray(tanker_index-1);
-//                for(int location_index = 0; location_index < tanker.length(); location_index++){
-//                    try{
-//                        JSONObject location = tanker.getJSONObject(location_index);
-//                        //draw the point
-//                        String name = location.getString("name");
-//                        double xcoord = location.getDouble("x");
-//                        double ycoord = location.getDouble("y");
-//                        String type = location.getString("type");
-//                        String locality = location.getString("locality");
-//                        int vendor_id = location.getInt("vendor_id");
-//                        double tanker_supply_factor = location.getDouble("tanker_supply_factor");
-//                        double consumption = location.getDouble("consumption");
-//                        LatLng point = new LatLng(xcoord, ycoord);
-//                        mMap.addMarker(new MarkerOptions().position(point).title(locality));
-//                        System.out.println(xcoord);
-//                        System.out.println(ycoord);
-//
-//                    }catch(JSONException e){
-//                        e.printStackTrace();
-//                        continue;
-//                    }
-//                }
-//            }catch(JSONException e){
-//                e.printStackTrace();
-//                continue;
-//            }
-//        }
+    }
+    public void simNav(View view) {
+        System.out.println(polyline_strings);
     }
 }
 
