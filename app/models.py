@@ -20,3 +20,4 @@ class Community_table(db.Model):
     longitude = db.Column(db.Float)
     # vendor_id = db.Column(db.Integer, db.ForeignKey('vendor_table.id'))
     vendor_id = db.Column(db.Integer)
+    num_persons = db.Column(db.Integer)

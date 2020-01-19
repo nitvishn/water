@@ -63,6 +63,7 @@ def loadCommunities():
             community.vendor_id,
             # int.from_bytes(community.vendor_id, "little")
         ))
+        communities[-1].num_persons = community.num_persons
     return communities
 
 
@@ -142,7 +143,6 @@ def tsp(vendor, date):
         communities = deepcopy(vendor.communities)
         for community in communities:
             community.consumption = community.predict(month)
-            print(community.consumption, community.tanker_supply_factor)
         route_list = []
 
         for day in range(period):
@@ -154,6 +154,7 @@ def tsp(vendor, date):
                 while(len(communities) > 0 and max(scores.values()) > 0):
                     communities.sort(key=lambda x: scores[x])
                     next = getNextCommunity(communities, scores)
+                    print(next)
                     if next:
                         if tanker.cur_capacity >= next.consumption:
                             tanker.cur_capacity -= next.consumption
@@ -172,40 +173,53 @@ def tsp(vendor, date):
 
         return len(communities), route_list
 
-    period = 2
+    period=1
     month = datetime.datetime(date.year, date.month, period)
     num_left, route_list = solution(vendor, month, period)
-    print("Number of communities left: ", num_left)
-    return route_list
+    return_dict = {}
+    return_dict['data'] = route_list[0]
+    return return_dict
 
 
 def main():
+    from dateutil.relativedelta import relativedelta
+    import matplotlib.pyplot as plt
     random.seed(0)
     today=datetime.datetime(2002, 1, 1)
     datem=datetime.datetime(today.year, today.month, 1)
 
-    # dates = []
-    # for i in range(12 * 10):
-    #     today += relativedelta(months=1)
-    #     dates.append(today)
-    # dates = numpy.array(dates)
+    dates = []
+    for i in range(12 * 10):
+        today += relativedelta(months=1)
+        dates.append(today)
+    dates = numpy.array(dates)
 
-    vendors=loadVendorsCSV('csvdata/vendors.csv')
-    communities=loadCommunitiesCSV('csvdata/communities.csv')
-    res=get_res('csvdata/austin_water.csv')
-    for community in communities:
-        community.assign_function(res)
-        for vendor in vendors:
-            if community.vendor_id == vendor.id:
-                vendor.communities.append(community)
+    data = pd.read_csv('csvdata/austin_water.csv')
+    x = list(set(data['Year Month']))
+    x.sort()
+    y = []
+    for date in x:
+        y.append(sum(data.loc[data['Year Month'] == date]['Total Gallons']))
+    xShow = [datetime.datetime.strptime(str(i), "%Y%m") for i in x]
+    x = numpy.array([date_valuation(k) for k in xShow])
+    res = fit_sin(x, y)
+    plt.title("Sinusoidal regression on water consumption data")
+    plt.plot(xShow, y, label='training data',c='orange')
+    plt.plot(xShow, res['fitfunc'](x), label='prediction', c='black')
+    # print(xShow)
+    plt.legend()
+    plt.xlabel("Time")
+    plt.ylabel("Litres of water")
+    plt.show()
 
-    # c1 = communities[0]
-    # c2 = communities[1]
-    # tanker = Tanker(5000)
-    #
-    # today = datetime.datetime.today()
-    # month = datetime.datetime(today.year, today.month, 1)
-    # print(community_score(c1, communities[2], month, tanker))
+    # vendors=loadVendors()
+    # communities=loadCommunities()
+    # res=get_res('csvdata/austin_water.csv')
+    # for community in communities:
+    #     community.assign_function(res)
+    #     for vendor in vendors:
+    #         if community.vendor_id == vendor.id:
+    #             vendor.communities.append(community)
 
     # y = vendors[0].communities[0].predict(dates)
     # plt.plot(dates, y)
@@ -217,14 +231,14 @@ def main():
     #     print(solutions[vendor])
     # return solutions
 
-    vendor = vendors[0]
-    print(vendor.communities)
-    tanker_num = 0
-    for tanker_route in tsp(vendor, datem):
-        print(tanker_num)
-        for community in tanker_route:
-            print(1*'\t', community)
-        tanker_num += 1
+    # vendor = vendors[0]
+    # print(vendor.communities)
+    # tanker_num = 0
+    # for tanker_route in tsp(vendor, datem):
+    #     print(tanker_num)
+    #     for community in tanker_route:
+    #         print(1*'\t', community)
+    #     tanker_num += 1
 
 
 if __name__ == "__main__":

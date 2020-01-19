@@ -64,14 +64,7 @@ class Community(object):
         returns None
         """
         usage_per_person = 150
-        if self.type == 'Apartment':
-            persons = random.randrange(100, 200)
-        elif self.type == 'House':
-            persons = random.randrange(2, 6)
-        elif self.type == 'Restaurant':
-            persons = random.randrange(20, 30)
-
-        mean = usage_per_person * persons
+        mean = usage_per_person * self.num_persons
         amp = 0.2 * mean
         self.fit_function = lambda x: amp * numpy.sin(x*res['omega'] + res['phase']) + mean
 
