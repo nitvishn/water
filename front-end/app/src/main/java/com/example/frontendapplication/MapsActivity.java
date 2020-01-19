@@ -134,12 +134,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         final Button tankerButton = (Button) findViewById(R.id.tanker_button);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose some animals");
+        builder.setTitle("Choose The Tankers");
 // add a checkbox list
         String[] tankerList = tanker;
         tankerList[0] = "Choose All";
         for (int i = 1; i < 31; i++) {
-            tankerList[i] = "Tanker" + Integer.toString(i);
+            tankerList[i] = "Tanker " + Integer.toString(i);
         }
         builder.setMultiChoiceItems(tankerList, newcheckedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
