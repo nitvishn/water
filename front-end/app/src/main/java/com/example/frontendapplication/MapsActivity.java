@@ -251,6 +251,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if(location_index != 0){
 
                             double consumption = location.getDouble("consumption");
+                            int pconsumption = (int)consumption;
                             String type = location.getString("type");
                             String locality = location.getString("locality");
                             int vendor_id = location.getInt("vendor_id");
@@ -259,7 +260,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             InfoWindowData info = new InfoWindowData();
                             info.setName("Destination: " + Integer.toString(location_index));
                             info.setType(type);
-                            info.setConsumption("Consumption: " + Double.toString(consumption));
+                            info.setConsumption("Consumption: " +Integer.toString(pconsumption) + " Litres");
                             CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(this);
                             mMap.setInfoWindowAdapter(customInfoWindow);
                             m.setTag(info);
