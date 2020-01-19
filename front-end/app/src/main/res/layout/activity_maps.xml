@@ -53,6 +53,6 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:onClick="simNav"
+        android:onClick="incrJourney"
         android:text="@string/navigate_text" />
 </LinearLayout>
