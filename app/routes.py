@@ -22,7 +22,7 @@ def write_to_database():
         if community.type == 'Apartment':
             persons = random.randrange(100, 200)
         elif community.type == 'House':
-            persons = random.randrange(2, 6)
+            persons = random.randrange(2, 8)
         elif community.type == 'Restaurant':
             persons = random.randrange(20, 30)
         db.session.add(Community_table(name=community.name, locality=community.locality, type=community.type,
@@ -38,10 +38,10 @@ def delete_all_entries():
         db.session.delete(c)
         c_count += 1
     v_count = 0
-    # for v in Vendor_table.query.all():
-    #     db.session.delete(v)
-    #     v_count += 1
-    # db.session.commit()
+    for v in Vendor_table.query.all():
+        db.session.delete(v)
+        v_count += 1
+    db.session.commit()
     return "Deleted " + str(v_count) + " vendors and " + str(c_count) + " communities."
 
 @app.route('/api')

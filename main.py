@@ -182,35 +182,39 @@ def tsp(vendor, date):
 
 
 def main():
-    from dateutil.relativedelta import relativedelta
     import matplotlib.pyplot as plt
-    random.seed(0)
-    today=datetime.datetime(2002, 1, 1)
-    datem=datetime.datetime(today.year, today.month, 1)
 
-    dates = []
-    for i in range(12 * 10):
-        today += relativedelta(months=1)
-        dates.append(today)
-    dates = numpy.array(dates)
-
-    data = pd.read_csv('csvdata/austin_water.csv')
-    x = list(set(data['Year Month']))
-    x.sort()
-    y = []
-    for date in x:
-        y.append(sum(data.loc[data['Year Month'] == date]['Total Gallons']))
-    xShow = [datetime.datetime.strptime(str(i), "%Y%m") for i in x]
-    x = numpy.array([date_valuation(k) for k in xShow])
-    res = fit_sin(x, y)
-    plt.title("Sinusoidal regression on water consumption data")
-    plt.plot(xShow, y, label='training data',c='orange')
-    plt.plot(xShow, res['fitfunc'](x), label='prediction', c='black')
-    # print(xShow)
-    plt.legend()
-    plt.xlabel("Time")
-    plt.ylabel("Litres of water")
+    plt.bar(['Previous', 'With Optimisation'], [30, 24])
     plt.show()
+
+    # from dateutil.relativedelta import relativedelta
+    # random.seed(0)
+    # today=datetime.datetime(2002, 1, 1)
+    # datem=datetime.datetime(today.year, today.month, 1)
+    #
+    # dates = []
+    # for i in range(12 * 10):
+    #     today += relativedelta(months=1)
+    #     dates.append(today)
+    # dates = numpy.array(dates)
+    #
+    # data = pd.read_csv('csvdata/austin_water.csv')
+    # x = list(set(data['Year Month']))
+    # x.sort()
+    # y = []
+    # for date in x:
+    #     y.append(sum(data.loc[data['Year Month'] == date]['Total Gallons']))
+    # xShow = [datetime.datetime.strptime(str(i), "%Y%m") for i in x]
+    # x = numpy.array([date_valuation(k) for k in xShow])
+    # res = fit_sin(x, y)
+    # plt.title("Sinusoidal regression on water consumption data")
+    # plt.plot(xShow, y, label='training data',c='orange')
+    # plt.plot(xShow, res['fitfunc'](x), label='', c='black')
+    # # print(xShow)
+    # plt.legend()
+    # plt.xlabel("Time")
+    # plt.ylabel("Litres of water")
+    # plt.show()
 
     # vendors=loadVendors()
     # communities=loadCommunities()
